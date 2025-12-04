@@ -1,9 +1,9 @@
 # Project Plan: Unified Nuclear Physics HPC Cluster
 
 **Date:** December 4, 2025
-**Version:** 3.0
+**Version:** 3.1
 **Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
-**Interconnect:** 10GbE (Arista DCS Series) with LACP Bonding
+**Interconnect:** 10GbE Copper with LACP Bonding
 **OS Standard:** AlmaLinux 9 / OpenHPC 3.x
 **Slurm Target:** Version 24.11
 
@@ -18,7 +18,7 @@ We are deploying a new dedicated HPC cluster to support low-energy nuclear physi
 3.  **Democratize Access:** Simplification of the user experience to reduce the training/support burden currently placed on senior graduate students (Cade).
 
 **Key Scientific Workloads:**
-* **Simulation:** Geant4, Talys (Nuclear Reaction Modeling), MCNP.
+* **Simulation:** Geant4, Talys (Nuclear Reaction Modeling).
 * **Analysis:** CERN ROOT.
 * **Custom DAQ Utilities:** `dat2xy`, `mvme2xy` (Data Conversion).
 * **Visualization Tools:** `quick_xy_plot`, `quick_xy_rebin`.
@@ -38,7 +38,7 @@ We are deploying a new dedicated HPC cluster to support low-energy nuclear physi
 * **Specs per Node:** 2x Xeon E5-2630 v4 (20 cores), 128GB RAM.
 
 ### Network Fabric
-* **Switch:** Arista 10GbE SFP+ Switch.
+* **Switch:** Arista 10GbE Copper Switch.
 * **Configuration:** LACP Link Bonding (802.3ad).
 * **Bandwidth:** 20 Gbps aggregated bandwidth per node.
 * **Boot Flow:** 1. DHCP Request (via External Endian Firewall).
@@ -67,7 +67,7 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 ## 4. Implementation Phase Strategy
 
 ### Phase 1: Infrastructure & Networking
-* **Lead:** System Architect / Engineer
+* **Lead:** Greg & Don
 * **Tasks:**
     * Configure Arista Switch: Set up Port Channels (LACP) for all node ports.
     * Configure Endian Firewall: Point DHCP Option 66 (Next-Server) to the IP of Node 01.
@@ -75,7 +75,7 @@ To prevent the lead graduate student from becoming permanent IT support, we will
     * Configure Network Bonding (`bond0`) on the Head Node.
 
 ### Phase 2: The Stateless Fabric
-* **Lead:** System Architect / Engineer
+* **Lead:** Greg & Don
 * **Tasks:**
     * Install Warewulf 4 on the Head Node.
     * Build the master VNFS image (AlmaLinux 9 base).
@@ -83,7 +83,7 @@ To prevent the lead graduate student from becoming permanent IT support, we will
     * Boot Nodes 02-04 and verify LACP negotiation on the Arista switch.
 
 ### Phase 3: Scientific Stack & Validation
-* **Lead:** Scientific Lead (Cade)
+* **Lead:** Cade
 * **Tasks:**
     * **Containerize:** Create Apptainer definitions for `mvme2xy` and `dat2xy`.
     * **Compile:** Optimize Talys/Geant4 for Broadwell (v4) CPUs.
@@ -101,9 +101,8 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 
 | Role | Responsibility | Success Metric |
 | :--- | :--- | :--- |
-| **System Architect** | Hardware integration, Slurm/Warewulf config, Network Bonding. | Nodes boot via PXE; 20Gbps bandwidth active. |
-| **Infrastructure Eng.** | Endian Firewall integration. | Seamless DHCP redirection to Head Node. |
-| **Scientific Lead (Cade)** | Application containerization, User workflow design. | Reduction in time spent troubleshooting peers' jobs. |
+| **Greg & Don** | Hardware integration, Slurm/Warewulf config, Network Bonding, Endian Firewall integration. | Nodes boot via PXE; 20Gbps bandwidth active; Seamless DHCP redirection. |
+| **Cade** | Application containerization, User workflow design. | Reduction in time spent troubleshooting peers' jobs. |
 
 ---
 
@@ -111,7 +110,5 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 
 1.  **LACP/PXE Handoff:** PXE requires a single interface, while the OS wants a bond.
     * *Mitigation:* Warewulf configuration must specifically delay the bonding initialization until after the image is transferred, or use Mode 4 (802.3ad) compatible boot settings.
-2.  **Custom Code Portability:** `mvme2xy`/`dat2xy` dependencies.
-    * *Mitigation:* Frozen legacy container environments.
-3.  **Storage I/O:**
+2.  **Storage I/O:** Processing large datasets with 80 cores simultaneously may choke the NFS head node.
     * *Mitigation:* Use the Head Node's storage primarily for `/home`; use local node SSD scratch space for heavy write operations.
