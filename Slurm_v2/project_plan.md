@@ -1,104 +1,103 @@
 # Project Plan: Unified Nuclear Physics HPC Cluster
 
 **Date:** December 4, 2025
-**Version:** 1.0
-**Target Hardware:** Supermicro "Twin" X10 (Primary), Supermicro X8 (Legacy)
+**Version:** 2.1
+**Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
 **OS Standard:** AlmaLinux 9 / OpenHPC 3.x
+**Slurm Target:** Version 24.11 (Latest Stable)
 
 ---
 
 ## 1. Executive Summary
-We are deploying a new dedicated HPC cluster to support low-energy nuclear physics experiments and Geant4 simulations. The core of the system is a newly acquired 4-node Supermicro "Twin" server. We will also integrate older legacy nodes to maximize throughput.
+We are deploying a new dedicated HPC cluster to support low-energy nuclear physics experiments and Geant4 simulations. The system is built on a high-density 4-node Supermicro X10 server.
 
-The goal is to move from "running simulations on individual desktops" to a **centralized, queued batch system** using industry-standard tools (Slurm, OpenHPC, Apptainer) that align with major labs like CERN and Fermilab.
+**Primary Goals:**
+1.  **Increase Throughput:** Enable processing of significantly larger datasets than the previous infrastructure allowed.
+2.  **Modernize Stack:** Upgrade from legacy Slurm 21.08.5 to the modern **Slurm 24.11+** standard.
+3.  **Democratize Access:** Simplification of the user experience to reduce the training/support burden currently placed on senior graduate students (Cade).
+
+**Key Scientific Workloads:**
+* **Simulation:** Geant4, Talys (Nuclear Reaction Modeling), MCNP (if applicable).
+* **Analysis:** CERN ROOT.
+* **Custom DAQ Utilities:** `dat2xy`, `mvme2xy` (Data Conversion).
+* **Visualization Tools:** `quick_xy_plot`, `quick_xy_rebin` (Rapid Data Inspection).
 
 ---
 
 ## 2. Hardware Architecture
-We will organize the hardware into two Slurm partitions (queues) to ensure urgent jobs are not blocked by slower legacy hardware.
+The cluster will be configured as a single, high-speed homogeneous partition.
 
-### Tier 1: The "Production" Partition (New Hardware)
+### The "Production" Partition
 * **Chassis:** Supermicro 2U Twin² (4 Nodes)
 * **Nodes:** 4x Supermicro X10DRT-B+
-* **Specs per Node:** Dual Xeon E5-2630 v4 (20 cores/40 threads), 128GB RAM (512GB Total Cluster RAM)
-* **Role:** High-speed, fast-turnaround simulations.
-* **Boot Method:** Stateless (PXE Boot / RAM Disk) via Warewulf.
-
-### Tier 2: The "Scavenger" Partition (Legacy Hardware)
-* **Nodes:** Supermicro X8DTG-QF+
-* **Specs:** Dual Xeon E5630 (Westmere), 48GB RAM.
-* **Role:** Long-running, low-priority jobs; testing; student learning.
-* **Constraint:** These CPUs are limited to the `x86-64-v2` instruction set (No AVX).
+* **Processor:** 8x Xeon E5-2630 v4 (Total: 80 Cores / 160 Threads)
+* **Memory:** 512GB Total (128GB per Node)
+* **Interconnect:** 10GbE / InfiniBand (depending on backplane config)
+* **Boot Method:** Stateless (PXE Boot / RAM Disk) via **Warewulf 4**.
 
 ---
 
-## 3. Software Stack Strategy
-
-### Operating System: AlmaLinux 9
-* **Why:** Chosen to align with Fermilab/CERN standards.
-* **Critical Feature:** Unlike RHEL 10, AlmaLinux 9 maintains full support for our legacy Westmere (Tier 2) CPUs.
-* **Lifecycle:** Supported until 2032.
+## 3. Software Stack & User Experience
 
 ### Cluster Management: OpenHPC 3.x
-* **Provisioning:** **Warewulf 4**. We will maintain a single OS image for the entire cluster.
-* **Scheduler:** **Slurm**. Users will submit job scripts (`#SBATCH`) rather than running interactively.
-* **Networking:** Existing Endian Firewall will handle DHCP; Head Node will handle TFTP/PXE.
+* **OS:** **AlmaLinux 9**. Chosen for long-term support (2032) and binary compatibility with CERN/Fermilab standards.
+* **Scheduler:** **Slurm 24.11**. This version introduces improved scheduling logic for high-throughput (many small jobs) workloads, which suits `dat2xy` data conversion tasks.
 
-### User Environment: Apptainer (Singularity)
-* **Strategy:** Containerize the simulation environment to avoid "dependency hell" with different Geant4/ROOT versions.
-* **Benefit:** A student can build a container on their laptop, upload it to the cluster, and it is guaranteed to run.
+### The "Cade Relief" Strategy (User Experience)
+To prevent the lead graduate student from becoming permanent IT support, we will implement **Interface Abstraction**:
+
+1.  **Open OnDemand (Recommended Add-on):**
+    * A web-based portal where users can launch Jupyter Notebooks, ROOT sessions, or file managers directly in a browser.
+    * *Benefit:* Eliminates the need to teach new students how to SSH, set up X11 forwarding, or configure VNC.
+2.  **Standardized Job Wrappers:**
+    * Instead of users writing raw Slurm scripts, we will deploy "helper commands" globally:
+        * `sub_talys input.txt` (Automatically generates the SBATCH wrapper).
+        * `sub_geant4 macro.mac` (Automatically requests 20 cores).
+3.  **Containerized Environments (Apptainer):**
+    * We will build a single "Lab Standard" container image (`lab-physics-v1.sif`) containing ROOT, Geant4, and the custom `mvme` tools pre-compiled.
+    * *Benefit:* "It works on my machine" becomes "It works on the cluster."
 
 ---
 
 ## 4. Implementation Phases
 
-### Phase 1: Infrastructure & Head Node (Week 1)
+### Phase 1: The Core Build (Week 1)
 * **Lead:** System Architect / Engineer
 * **Tasks:**
-    * Rack and stack the Supermicro X10.
-    * Install AlmaLinux 9 manually on Node 01 (Head Node).
-    * Configure Endian Firewall DHCP `next-server` option to point to Node 01.
-    * Install OpenHPC base packages and Warewulf.
+    * Rack and stack Supermicro X10.
+    * Configure Endian Firewall (DHCP Option 66/67).
+    * Install AlmaLinux 9 Head Node.
+    * Deploy **Warewulf 4** and boot all 4 nodes stateless.
 
-### Phase 2: The Stateless Fabric (Week 2)
-* **Lead:** System Architect / Engineer
+### Phase 2: The "Scientific" Stack (Week 2)
+* **Lead:** Scientific Lead (Cade)
 * **Tasks:**
-    * Build the master VNFS (Virtual Node File System) image.
-    * Configure Warewulf "overlays" for network (IPMI/Ethernet) configuration.
-    * Boot Nodes 02, 03, and 04 over the network.
-    * **Milestone:** All 4 nodes visible in `wwctl node list` and `sinfo`.
+    * **Containerize:** Create the Apptainer definition file for the custom codes (`mvme2xy`, `dat2xy`).
+    * **Compile:** Ensure Talys and Geant4 are compiled with optimizations for the Broadwell (v4) CPUs.
+    * **Validation:** Verify `quick_xy_plot` works over X11 forwarding or the Web Interface.
 
-### Phase 3: Legacy Integration (Week 3)
-* **Lead:** System Architect / Engineer
+### Phase 3: User Onboarding (Week 3)
+* **Lead:** Joint Effort
 * **Tasks:**
-    * Network boot the X8 nodes.
-    * *Validation:* Verify the AlmaLinux 9 image boots on Westmere CPUs.
-    * Configure Slurm partitions: `partition=main` (Default, X10 nodes) and `partition=legacy` (X8 nodes).
-
-### Phase 4: Scientific User Pilot (Week 4)
-* **Lead:** Scientific Lead (Grad Student)
-* **Tasks:**
-    * **Containerize Geant4:** Build an Apptainer definition file for the current simulation code.
-    * **Benchmarking:** Run the standard "TestEm" Geant4 example on Tier 1 vs. Tier 2 to establish a performance baseline.
-    * **Documentation:** Write a "How to Submit a Job" wiki page for the group.
+    * Deploy the "Helper Scripts" to `/usr/local/bin`.
+    * Wiki Documentation: "Quickstart Guide" (max 1 page).
+    * **The "Cade Rule":** If a user has a question, they check the Wiki first. If the Wiki is missing it, Cade answers it *once* and updates the Wiki.
 
 ---
 
 ## 5. Roles & Responsibilities
 
-| Role | Primary Responsibility | Key Deliverable |
+| Role | Responsibility | Success Metric |
 | :--- | :--- | :--- |
-| **System Architect** | Hardware deployment, OS architecture, OpenHPC configuration. | A running Slurm cluster with 4 active nodes. |
-| **Infrastructure Eng.** | Network integration (Endian), Cabling, Power/Cooling management. | DHCP option 66/67 setup, IPMI network isolation. |
-| **Scientific Lead** | Software validation, Geant4 containerization, User documentation. | A working `submit_job.sh` script example for the group. |
+| **System Architect** | Hardware stability, Slurm configuration, Warewulf images. | 99.9% Uptime; All nodes boot automatically. |
+| **Infrastructure Eng.** | Network/Power, Endian Firewall integration. | Seamless DHCP/PXE traffic. |
+| **Scientific Lead (Cade)** | Application containerization, User workflow design. | **Reduction in time spent troubleshooting peers' jobs.** |
 
 ---
 
 ## 6. Risk Assessment
 
-1.  **Legacy CPU Instruction Sets:** The X8 nodes lack AVX instructions.
-    * *Mitigation:* Compile Geant4 with `-march=generic` or `x86-64-v2` flags inside the container.
-2.  **Shared Point of Failure:** The Supermicro Twin system shares a power supply backplane.
-    * *Mitigation:* Ensure PSUs are connected to separate UPS circuits.
-3.  **Storage:** The Head Node handles storage (NFS).
-    * *Future Upgrade:* If data exceeds ~4TB, add dedicated NAS/ZFS storage.
+1.  **Custom Code Portability:** `mvme2xy` or `dat2xy` may depend on 32-bit libraries or specific older compilers.
+    * *Mitigation:* These will be permanently frozen inside an Apptainer container running an older OS (like Rocky 8) if they cannot be recompiled for AlmaLinux 9.
+2.  **Storage I/O Bottlenecks:** Processing large datasets with 80 cores simultaneously may choke the NFS head node.
+    * *Mitigation:* Configure a dedicated high-speed "scratch" directory on the local SSDs of the compute nodes for intermediate files.
