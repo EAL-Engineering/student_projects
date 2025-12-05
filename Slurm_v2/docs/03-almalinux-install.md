@@ -74,3 +74,35 @@ After the installation completes, reboot the system and log in as `root`.
 ### A. System Update
 ```bash
 dnf -y update
+```
+
+### B. Enable CodeReady Builder (CRB)
+OpenHPC 3.x on EL9 relies on the CRB repository (formerly PowerTools in EL8) for build dependencies like hwloc.
+```bash
+dnf config-manager --set-enabled crb
+```
+
+### C. Install EPEL
+
+The "Extra Packages for Enterprise Linux" repository provides standard admin tools not found in the base OS.
+
+```bash
+dnf -y install epel-release
+```
+
+### D. Install OpenHPC Repository
+
+Install the release RPM to define the OpenHPC 3.x repositories.
+
+```bash
+dnf -y install http://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm
+```
+
+### E. Reboot
+
+Perform one final reboot to ensure you are running the latest kernel installed during step 3A.
+
+
+```bash
+reboot
+```
