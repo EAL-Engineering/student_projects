@@ -1,7 +1,7 @@
 # Phase 1, Task 2: Endian Firewall Configuration (DHCP & PXE Handoff)
 
-**Goal:** Configure Endian to provide IPs to all nodes but redirect Compute Nodes (02-04) to boot from the Head Node (01).
-**Reference:** Project Plan Section 4 (Phase 1) & Section 2 (Network Fabric)
+* **Goal:** Configure Endian to provide IPs to all nodes but redirect Compute Nodes (02-04) to boot from the Head Node (01).
+* **Reference:** Project Plan Section 4 (Phase 1) & Section 2 (Network Fabric)
 
 ## 1. Network Parameters & Assignment
 **Network Topology:**

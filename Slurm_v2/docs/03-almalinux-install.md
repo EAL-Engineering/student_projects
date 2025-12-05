@@ -1,9 +1,10 @@
 # Phase 1, Step 3: Head Node OS Installation
-**File:** `03-almalinux-install.md`
-**Date:** December 5, 2025
-**Target:** Node 01 (Head Node)
-**OS:** AlmaLinux 9.x
-**Hardware:** Supermicro X10 "Twin" (2x Xeon E5-2630 v4)
+
+* **File:** `03-almalinux-install.md`
+* **Date:** December 5, 2025
+* **Target:** Node 01 (Head Node)
+* **OS:** AlmaLinux 9.x
+* **Hardware:** Supermicro X10 "Twin" (2x Xeon E5-2630 v4)
 
 ---
 

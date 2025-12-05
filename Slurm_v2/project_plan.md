@@ -1,11 +1,11 @@
 # Project Plan: Unified Nuclear Physics HPC Cluster
 
-**Date:** December 4, 2025
-**Version:** 3.1
-**Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
-**Interconnect:** 10GbE Copper with LACP Bonding
-**OS Standard:** AlmaLinux 9 / OpenHPC 3.x
-**Slurm Target:** Version 24.11
+* **Date:** December 4, 2025
+* **Version:** 3.1
+* **Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
+* **Interconnect:** 10GbE Copper with LACP Bonding
+* **OS Standard:** AlmaLinux 9 / OpenHPC 3.x
+* **Slurm Target:** Version 24.11
 
 ---
 
