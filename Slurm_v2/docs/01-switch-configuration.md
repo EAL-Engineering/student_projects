@@ -1,0 +1,154 @@
+# **Phase 1: Arista Switch Configuration**
+
+Device: Arista 10GbE Switch (DCS Series)  
+Goal: Configure LACP bonding for compute nodes and a "silent" uplink to satisfy University OIT requirements.
+
+## **1. Physical Connection**
+
+1. **Console:** Connect via the RJ45/DB9 Console port.  
+   * **Baud:** 9600  
+   * **Data:** 8  
+   * **Parity:** None  
+   * **Stop:** 1  
+   * **Flow:** None  
+2. **Power:** Connect power and boot the device.
+
+## **2. Factory Reset ("Nuke and Pave")**
+
+*Note: Perform this immediately upon boot to ensure a clean state.*
+
+1. Reboot the switch.  
+2. Press Ctrl+C when prompted to enter **Aboot**.  
+3. Run the factory reset command:
+```console
+   Aboot# fullrecover
+```
+
+4. Type y to confirm. The switch will format flash and reboot.  
+5. Login with default credentials:  
+   * **User:** `admin`
+   * **Password:** (Blank)
+6. If prompted for Zero Touch Provisioning (ZTP), cancel it:  
+
+```console
+localhost> zerotouch cancel
+```
+
+   *(Switch will reboot one final time).*
+
+## **3. Basic System Configuration**
+
+Enable privileged mode and set the hostname.  
+
+```console
+enable  
+configure terminal  
+hostname Physics-Cluster-Sw  
+username admin secret YourSecurePasswordHere
+```
+
+## **4. Port Channel (LACP) Configuration**
+
+We use lacp fallback individual. This is critical for PXE booting. It allows the ports to act as standard (non-bonded) switch ports during boot (when no OS is running), but upgrade to a high-speed Bond/LAG once the OS loads.  
+
+**Paste the following:**  
+```console
+! Global default for new port channels (Optional but helpful)
+port-channel lacp fallback individual
+port-channel lacp fallback timeout 30
+
+! --- DEFINE PORT CHANNELS ---
+
+interface Port-Channel 1
+   description Node01_Bond
+   switchport mode access
+   ! Critical for PXE Boot
+   port-channel lacp fallback individual
+   port-channel lacp fallback timeout 30
+   ! Critical for HPC Failover speed
+   port-channel lacp rate fast
+   ! Ensure immediate forwarding for DHCP
+   spanning-tree portfast
+
+interface Port-Channel 2
+   description Node02_Bond
+   switchport mode access
+   port-channel lacp fallback individual
+   port-channel lacp fallback timeout 30
+   port-channel lacp rate fast
+   spanning-tree portfast
+
+interface Port-Channel 3
+   description Node03_Bond
+   switchport mode access
+   port-channel lacp fallback individual
+   port-channel lacp fallback timeout 30
+   port-channel lacp rate fast
+   spanning-tree portfast
+
+interface Port-Channel 4
+   description Node04_Bond
+   switchport mode access
+   port-channel lacp fallback individual
+   port-channel lacp fallback timeout 30
+   port-channel lacp rate fast
+   spanning-tree portfast
+
+! --- MAP PHYSICAL PORTS ---
+! We apply MTU 9000 here for Jumbo Frames
+
+interface Ethernet 1-8
+   mtu 9000
+   speed forced 10000full
+
+interface Ethernet 1-2
+   description Node01
+   channel-group 1 mode active
+
+interface Ethernet 3-4
+   description Node02
+   channel-group 2 mode active
+
+interface Ethernet 5-6
+   description Node03
+   channel-group 3 mode active
+
+interface Ethernet 7-8
+   description Node04
+   channel-group 4 mode active
+```
+
+## **5. Uplink Configuration (OIT Compliance)**
+
+**CRITICAL STEP:** We must prevent Spanning Tree Protocol (STP) Bridge Protocol Data Units (BPDUs) from leaking upstream. University switches usually have "BPDU Guard" enabled, which will instantly shut off your port if they detect your switch trying to participate in STP.  
+We will use bpdufilter to silently drop STP packets on the uplink only, keeping the port active.  
+*Assumption: Port 48 is your uplink to the wall jack.*  
+
+```console
+interface Ethernet 48  
+   description Uplink_to_University_Network  
+   switchport mode access  
+     
+   ! FORCE DISABLE STP PACKETS ON THIS PORT  
+   spanning-tree bpdufilter enable  
+   spanning-tree portfast  
+     
+   no shutdown
+```
+
+## **6. Verification & Save**
+
+1. Verify the Port Channels are created (they may show "Fallback" if nodes are off, which is correct):  
+   `show port-channel summary`
+
+2. Verify the Uplink has BPDU filtering active:  
+   `show spanning-tree interface Ethernet 48 detail`
+
+   *(Look for "Bpdu filter is enabled")*  
+3. **Save the configuration to persistent memory:**  
+   `write memory` 
+4. **Verify MTU and LACP Status:**  
+```console
+show interfaces Ethernet 1 | include MTU
+show lacp internal detail
+```
