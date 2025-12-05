@@ -21,43 +21,37 @@
 ## 2. Access Configuration
 1.  Log in to the **Endian Firewall Web Interface** (`https://10.0.0.254:10443`).
 2.  Navigate to **Services** -> **DHCP Server**.
-3.  Select the **Green Interface**.
+3.  Click the **Fixed leases** tab.
 
 ## 3. Configure Static Leases (Fixed IPs)
+*Note: You must click the "Advanced options" dropdown to see the boot settings.*
 
 **A. Add Head Node (Node 01)**
-1.  Click **Add new fixed lease**.
-2.  **MAC Address:** `<MAC_of_Node01>`
-3.  **IP Address:** `10.0.0.91`
+1.  Click **Add a fixed lease**.
+2.  **MAC address:** `<MAC_of_Node01>`
+3.  **IP address:** `10.0.0.91`
 4.  **Remark:** `New Cluster Head Node`
-5.  **Next-Server:** (Leave Blank - boots locally)
-6.  **Filename:** (Leave Blank)
+5.  Click **Advanced options** (expand):
+    * **Next address:** (Leave Blank)
+    * **Filename:** (Leave Blank)
+    * **Root path:** (Leave Blank)
+6.  Ensure **Enabled** is checked and click **Add**.
 
 **B. Add Compute Nodes (Nodes 02-04)**
-1.  Click **Add new fixed lease**.
-2.  **MAC Address:** `<MAC_of_Node02>`
-3.  **IP Address:** `10.0.0.92`
+1.  Click **Add a fixed lease**.
+2.  **MAC address:** `<MAC_of_Node02>`
+3.  **IP address:** `10.0.0.92`
 4.  **Remark:** `New Cluster Node 02`
-5.  **Next-Server:** `10.0.0.91` (Points to Head Node)
-6.  **Filename:** `ipxe.efi`
+5.  Click **Advanced options** (expand):
+    * **Next address:** `10.0.0.91`  *(This points PXE requests to the Head Node)*
+    * **Filename:** `ipxe.efi`      *(The bootloader file hosted on Node 01)*
+    * **Root path:** (Leave Blank)
+6.  Click **Add**.
 
-*(Repeat for Node 03 at `10.0.0.93` and Node 04 at `10.0.0.94`, ensuring Next-Server is always `10.0.0.91`)*
+*(Repeat Step B for **Node 03** at `10.0.0.93` and **Node 04** at `10.0.0.94`)*
 
-## 4. Alternative: Global PXE Redirection
-*If you prefer to set the boot options for the entire subnet (Warning: Ensure this doesn't conflict with other PXE devices on the 10.0.x.x network).*
-
-1.  Scroll to **Settings** -> **Custom Configuration**.
-2.  Paste the following:
-    
-    # Option 66: IP of the TFTP Server (New Head Node 01)
-    option tftp-server-name "10.0.0.91";
-    
-    # Option 67: The Boot File (served by Warewulf on Node 01)
-    option bootfile-name "ipxe.efi";
-
-## 5. Apply & Verify
-1.  Click **Save**.
-2.  Click **Apply** (top banner) to restart the DHCP service.
-3.  **Verification:**
-    * From a machine on the `10.0.x.x` network, ping `10.0.0.91` (once Node 01 is up) to verify the address is free/active.
-    * Run `sudo nmap --script broadcast-dhcp-discover` to ensure the `Next-Server` field reports `10.0.0.91`.
+## 4. Apply & Verify
+1.  Click **Apply** (top banner) to restart the DHCP service.
+2.  **Verification:**
+    * From a machine on the network, ping `10.0.0.91` (once Node 01 is up) to verify the address is assigned.
+    * Run `sudo nmap --script broadcast-dhcp-discover` to ensure the `Next-Server` (Option 66) field reports `10.0.0.91` for the compute nodes.
