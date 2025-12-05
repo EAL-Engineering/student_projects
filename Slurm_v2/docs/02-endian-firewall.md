@@ -13,7 +13,7 @@
 **New Cluster IP Allocation (90 Series):**
 | Role | Hostname | IP Address | Boot Method |
 | :--- | :--- | :--- | :--- |
-| **Head Node** | `node01` | **10.0.0.91** | Local Disk (No PXE Redirection) |
+| **Head Node** | `node01` (Node A) | **10.0.0.91** | Local Disk (No PXE Redirection) |
 | Compute Node | `node02` | **10.0.0.92** | PXE -> Redirect to 10.0.0.91 |
 | Compute Node | `node03` | **10.0.0.93** | PXE -> Redirect to 10.0.0.91 |
 | Compute Node | `node04` | **10.0.0.94** | PXE -> Redirect to 10.0.0.91 |
@@ -26,32 +26,32 @@
 ## 3. Configure Static Leases (Fixed IPs)
 *Note: You must click the "Advanced options" dropdown to see the boot settings.*
 
-**A. Add Head Node (Node 01)**
+**A. Add Head Node (Node 01 / Node A)**
 1.  Click **Add a fixed lease**.
-2.  **MAC address:** `<MAC_of_Node01>`
+2.  **MAC address:** `AC:1F:6B:CB:3C:3B`
 3.  **IP address:** `10.0.0.91`
-4.  **Remark:** `New Cluster Head Node`
-5.  Click **Advanced options** (expand):
+4.  **Remark:** `Head Node (Node A) - Data`
+5.  Click **Advanced options**:
     * **Next address:** (Leave Blank)
     * **Filename:** (Leave Blank)
-    * **Root path:** (Leave Blank)
-6.  Ensure **Enabled** is checked and click **Add**.
-
-**B. Add Compute Nodes (Nodes 02-04)**
-1.  Click **Add a fixed lease**.
-2.  **MAC address:** `<MAC_of_Node02>`
-3.  **IP address:** `10.0.0.92`
-4.  **Remark:** `New Cluster Node 02`
-5.  Click **Advanced options** (expand):
-    * **Next address:** `10.0.0.91`  *(This points PXE requests to the Head Node)*
-    * **Filename:** `ipxe.efi`      *(The bootloader file hosted on Node 01)*
-    * **Root path:** (Leave Blank)
 6.  Click **Add**.
 
-*(Repeat Step B for **Node 03** at `10.0.0.93` and **Node 04** at `10.0.0.94`)*
+**B. Add Compute Nodes (Nodes 02-04)**
+*(Waiting for MAC addresses from Node B, C, and D images)*
+
+1.  Click **Add a fixed lease**.
+2.  **MAC address:** `[Pending Node B MAC]`
+3.  **IP address:** `10.0.0.92`
+4.  **Remark:** `Compute Node 02`
+5.  Click **Advanced options**:
+    * **Next address:** `10.0.0.91`
+    * **Filename:** `ipxe.efi`
+6.  Click **Add**.
+
+*(Repeat for Nodes 03 and 04 once MACs are confirmed)*
 
 ## 4. Apply & Verify
 1.  Click **Apply** (top banner) to restart the DHCP service.
 2.  **Verification:**
-    * From a machine on the network, ping `10.0.0.91` (once Node 01 is up) to verify the address is assigned.
-    * Run `sudo nmap --script broadcast-dhcp-discover` to ensure the `Next-Server` (Option 66) field reports `10.0.0.91` for the compute nodes.
+    * From a network machine: `ping 10.0.0.91` (after Node 01 boot).
+    * Check `Next-Server` (Option 66) is `10.0.0.91` for the compute nodes.
