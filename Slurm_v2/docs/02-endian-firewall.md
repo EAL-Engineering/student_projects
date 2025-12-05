@@ -19,7 +19,7 @@
 | Compute Node | `node04` (Node D) | **10.0.0.94** | `AC:1F:6B:CB:2A:91` | PXE -> Redirect |
 
 ## 2. Access Configuration
-1.  Log in to the **Endian Firewall Web Interface** (`https://10.0.0.254:10443`).
+1.  Log in to the **Endian Firewall Web Interface** (`https://10.0.0.254`).
 2.  Navigate to **Services** -> **DHCP Server**.
 3.  Click the **Fixed leases** tab.
 
@@ -27,7 +27,7 @@
 *Note: You must click the "Advanced options" dropdown to see the boot settings.*
 
 **A. Add Head Node (Node 01 / Node A)**
-1.  Click **Add a fixed lease**.
+1.  Click **Add a fixed leases**.
 2.  **MAC address:** `AC:1F:6B:CB:3C:3B`
 3.  **IP address:** `10.0.0.91`
 4.  **Remark:** `Head Node (Node A) - Data`
@@ -37,7 +37,7 @@
 6.  Click **Add**.
 
 **B. Add Compute Node 02 (Node B)**
-1.  Click **Add a fixed lease**.
+1.  Click **Add a fixed leases**.
 2.  **MAC address:** `AC:1F:6B:CB:4D:B3`
 3.  **IP address:** `10.0.0.92`
 4.  **Remark:** `Compute Node 02 (Node B) - Data`
@@ -47,7 +47,7 @@
 6.  Click **Add**.
 
 **C. Add Compute Node 03 (Node C)**
-1.  Click **Add a fixed lease**.
+1.  Click **Add a fixed leases**.
 2.  **MAC address:** `AC:1F:6B:CB:4D:B1`
 3.  **IP address:** `10.0.0.93`
 4.  **Remark:** `Compute Node 03 (Node C) - Data`
@@ -57,7 +57,7 @@
 6.  Click **Add**.
 
 **D. Add Compute Node 04 (Node D)**
-1.  Click **Add a fixed lease**.
+1.  Click **Add a fixed leases**.
 2.  **MAC address:** `AC:1F:6B:CB:2A:91`
 3.  **IP address:** `10.0.0.94`
 4.  **Remark:** `Compute Node 04 (Node D) - Data`
