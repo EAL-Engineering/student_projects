@@ -15,7 +15,7 @@ Before booting the installation media, ensure the Supermicro X10 BIOS is configu
 * **Boot Mode:** **UEFI** (Disable Legacy/CSM).
 * **PCIe Configuration:** Enable **Above 4G Decoding** (Critical for NVMe support).
 * **SATA Mode:** **AHCI**.
-    * *Note:* Do not use "Intel RST/RAID".
+    * **_Note_**: Do not use "Intel RST/RAID".
 
 ---
 
@@ -25,7 +25,7 @@ Boot from the AlmaLinux 9 installation media. Select **"Install AlmaLinux 9"**.
 ### A. Localization
 * **Language:** English (United States).
 * **Time & Date:** Select local timezone (e.g., New York).
-    * *Tip:* Toggle **Network Time** to **ON** (top right).
+    * **_Tip_**: Toggle **Network Time** to **ON** (top right).
 
 ### B. Software Selection (Critical)
 * **Base Environment:** **Minimal Install**.
