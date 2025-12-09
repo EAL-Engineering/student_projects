@@ -21,7 +21,17 @@ Identify the physical device names (e.g., `eno1`, `eno2`).
 nmcli device status
 ```
 
-Remove any default connections created by NetworkManager during OS installation to prevent conflicts.
+Example output:
+```
+DEVICE  TYPE      STATE         CONNECTION
+eno1    ethernet  disconnected  --
+eno2    ethernet  disconnected  --
+lo      loopback  unmanaged     --
+```
+
+**_Note_**: If STATE shows "connected" to a "Wired connection", proceed to the cleanup step below.
+
+_Cleanup_: Remove any default connections created by NetworkManager during OS installation to prevent conflicts.
 
 ```bash
 # Replace 'eno1' and 'eno2' with your specific device names
@@ -41,6 +51,16 @@ nmcli connection add type bond con-name bond0 ifname bond0 \
 bond.options "mode=802.3ad,miimon=100,lacp_rate=fast"
 ```
 
+Expected Output:
+```
+Connection 'bond0' (uuid: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) successfully added.
+```
+
+Expected output:
+```
+Connection 'bond0-port1' (uuid: ...) successfully added. Connection 'bond0-port2' (uuid: ...) successfully added.
+```
+
 ### B. Add Physical Slaves
 
 Attach the physical 10GbE interfaces to the bond master.
@@ -53,11 +73,9 @@ nmcli connection add type ethernet slave-type bond con-name bond0-port2 ifname e
 
 The Head Node requires a static IP to function as the Cluster Controller and PXE Server.
 
-    IP Address: 10.0.0.91
-
-    Subnet Mask: /16 (255.255.0.0)
-
-    Gateway: 10.0.0.254
+* **IP Address:** `10.0.0.91`
+* **Subnet Mask:** `/16` (255.255.0.0)
+* **Gateway:** `10.0.0.254`
 
 
 ```Bash
@@ -90,21 +108,33 @@ nmcli connection show
 ```
 
 ### C. Verify LACP Negotiation (Critical)
+Use the following checks to confirm the switch negotiation is successful.
 
-Check the kernel bonding status to ensure the switch is cooperating.
+1.  **Verify Bonding Mode**
+    Ensure the mode is IEEE 802.3ad.
+    ```bash
+    grep "Bonding Mode" /proc/net/bonding/bond0
+    # Expected: Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+    ```
 
-```Bash
-cat /proc/net/bonding/bond0
-```
+2.  **Verify Partner MAC Address**
+    This must match your Arista switch's MAC address. If this is all zeros, the switch is not communicating.
+    ```bash
+    grep "Partner Mac Address" /proc/net/bonding/bond0
+    # Expected: Partner Mac Address: [Your_Switch_MAC]
+    ```
 
-# Success Criteria:
+3.  **Verify Aggregator ID**
+    Ensure all slaves belong to the same Aggregator ID.
+    ```bash
+    grep "Aggregator ID" /proc/net/bonding/bond0
+    # Expected: The IDs shown for Slave Interface eno1 and eno2 must match.
+    ```
 
-    Bonding Mode: IEEE 802.3ad Dynamic link aggregation
-
-    Aggregator ID: Should match on both slaves.
-
-    Partner Mac Address: Must match the Arista Switch MAC.
-
-        Note: If this shows 00:00:00:00:00:00, the switch is not configured correctly or cabling is faulty.
-
-    Slave Interface state: Both should be up.
+4.  **Verify Slave Status**
+    Both interfaces must be up and active.
+    ```bash
+    grep "Status" /proc/net/bonding/bond0
+    # Expected: Status: up (for both Slave Interface sections)
+    ```
+    
