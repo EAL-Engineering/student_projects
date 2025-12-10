@@ -78,34 +78,34 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 
 * **Lead:** Greg & Don
 * **Tasks:**
-  * Configure Arista Switch: Set up Port Channels (LACP) for all node ports.
-  * Configure Endian Firewall: Point DHCP Option 66 (Next-Server) to the IP of Node 01.
-  * Install AlmaLinux 9 on Node 01 (Head Node).
-  * Configure Network Bonding (`bond0`) on the Head Node.
+  1. Configure Arista Switch: Set up Port Channels (LACP) for all node ports.
+  1. Configure Endian Firewall: Point DHCP Option 66 (Next-Server) to the IP of Node 01.
+  1. Install AlmaLinux 9 on Node 01 (Head Node).
+  1. Configure Network Bonding (`bond0`) on the Head Node.
 
 ### Phase 2: The Stateless Fabric
 
 * **Lead:** Greg & Don
 * **Tasks:**
-  * Install Warewulf 4 on the Head Node.
-  * Build the master VNFS image (AlmaLinux 9 base).
-  * Configure Warewulf Overlays to inject `ifcfg-bond0` configurations into compute nodes during boot.
-  * Boot Nodes 02-04 and verify LACP negotiation on the Arista switch.
+  1. Install Warewulf 4 on the Head Node.
+  1. Build the master VNFS image (AlmaLinux 9 base).
+  1. Configure Warewulf Overlays to inject `ifcfg-bond0` configurations into compute nodes during boot.
+  1. Boot Nodes 02-04 and verify LACP negotiation on the Arista switch.
 
 ### Phase 3: Scientific Stack & Validation
 
 * **Lead:** Cade
 * **Tasks:**
-  * **Containerize:** Create Apptainer definitions for `mvme2xy` and `dat2xy`.
-  * **Compile:** Optimize Talys/Geant4 for Broadwell (v4) CPUs.
-  * **Validation:** Verify 20Gbps throughput between nodes using `iperf3`.
+  1. **Containerize:** Create Apptainer definitions for `mvme2xy` and `dat2xy`.
+  1. **Compile:** Optimize Talys/Geant4 for Broadwell (v4) CPUs.
+  1. **Validation:** Verify 20Gbps throughput between nodes using `iperf3`.
 
 ### Phase 4: User Onboarding
 
 * **Lead:** Joint Effort
 * **Tasks:**
-  * Deploy helper scripts to `/usr/local/bin`.
-  * Publish "Quickstart Guide" on internal Wiki.
+  1. Deploy helper scripts to `/usr/local/bin`.
+  1. Publish "Quickstart Guide" on internal Wiki.
 
 ---
 
