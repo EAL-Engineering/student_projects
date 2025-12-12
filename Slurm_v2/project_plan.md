@@ -1,7 +1,7 @@
 # Project Plan: Unified Nuclear Physics HPC Cluster
 
 * **Date:** December 4, 2025
-* **Version:** 3.1
+* **Version:** 3.2
 * **Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
 * **Interconnect:** 10GbE Copper with LACP Bonding
 * **OS Standard:** AlmaLinux 9 / OpenHPC 3.x
@@ -17,7 +17,7 @@ We are deploying a new dedicated HPC cluster to support low-energy nuclear physi
 
 1. **Increase Throughput:** Enable processing of significantly larger datasets using high-bandwidth networked storage and parallel processing.
 2. **Modernize Stack:** Upgrade from legacy Slurm 21.08.5 to the modern **Slurm 24.11+** standard.
-3. **Democratize Access:** Simplification of the user experience to reduce the training/support burden currently placed on senior graduate students (Cade).
+3. **Democratize Access:** Simplification of the user experience to reduce the training/support burden currently placed on graduate students (Cade).
 
 **Key Scientific Workloads:**
 
@@ -69,6 +69,18 @@ To prevent the lead graduate student from becoming permanent IT support, we will
     * Global helper commands (e.g., `sub_talys`, `sub_geant4`) to auto-generate SBATCH headers.
 3. **Containerized Environments (Apptainer):**
     * A "Lab Standard" container image (`lab-physics-v1.sif`) containing ROOT, Geant4, and custom `mvme` tools.
+
+### Architecture Decision: Apptainer vs. Integrated Image
+
+**Question:** Why use external containers instead of installing scientific software directly into the boot image?
+
+**Decision:** We will host the software stack in Apptainer containers on shared storage, rather than "baking" it into the Warewulf VNFS image.
+
+**Rationale:**
+
+1. **Boot Speed:** Keeps the VNFS OS image small (<500MB) for rapid PXE booting. Adding Geant4/ROOT would balloon the image to 4GB+, significantly slowing down node reboots.
+2. **Maintainability:** Allows us to update the scientific software (e.g., a new Geant4 version) instantly by replacing the `.sif` file, without needing to rebuild the OS image or reboot the entire cluster.
+3. **Performance:** The **20Gbps LACP interconnect** ensures that executing the container from the network storage has near-local performance, negating the traditional speed penalty of network shares.
 
 ---
 
