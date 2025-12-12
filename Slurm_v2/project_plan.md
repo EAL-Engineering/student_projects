@@ -1,7 +1,7 @@
 # Project Plan: Unified Nuclear Physics HPC Cluster
 
-* **Date:** December 4, 2025
-* **Version:** 3.2
+* **Date:** December 12, 2025
+* **Version:** 3.3
 * **Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
 * **Interconnect:** 10GbE Copper with LACP Bonding
 * **OS Standard:** AlmaLinux 9 / OpenHPC 3.x
@@ -103,6 +103,7 @@ To prevent the lead graduate student from becoming permanent IT support, we will
   1. Build the master VNFS image (AlmaLinux 9 base).
   1. Configure Warewulf Overlays to inject `ifcfg-bond0` configurations into compute nodes during boot.
   1. Boot Nodes 02-04 and verify LACP negotiation on the Arista switch.
+  1. Set up NFS for shared storage.
 
 ### Phase 3: Scientific Stack & Validation
 
