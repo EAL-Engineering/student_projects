@@ -1,7 +1,7 @@
 # Project Plan: Unified Nuclear Physics HPC Cluster
 
-* **Date:** December 12, 2025
-* **Version:** 3.3
+* **Date:** December 18, 2025
+* **Version:** 3.4
 * **Target Hardware:** Supermicro "Twin" X10 (4 Nodes)
 * **Interconnect:** 10GbE Copper with LACP Bonding
 * **OS Standard:** AlmaLinux 9 / OpenHPC 3.x
@@ -64,7 +64,7 @@ We are deploying a new dedicated HPC cluster to support low-energy nuclear physi
 
 To prevent the lead graduate student from becoming permanent IT support, we will implement **Interface Abstraction**:
 
-1. **Open OnDemand:** A web-based portal for Jupyter Notebooks and file management.
+1. **Open OnDemand:** A web-based portal for Jupyter Notebooks, file management, and shell access.
 2. **Standardized Job Wrappers:**
     * Global helper commands (e.g., `sub_talys`, `sub_geant4`) to auto-generate SBATCH headers.
 3. **Containerized Environments (Apptainer):**
@@ -103,15 +103,17 @@ To prevent the lead graduate student from becoming permanent IT support, we will
   1. Build the master VNFS image (AlmaLinux 9 base).
   1. Configure Warewulf Overlays to inject `ifcfg-bond0` configurations into compute nodes during boot.
   1. Boot Nodes 02-04 and verify LACP negotiation on the Arista switch.
-  1. Set up NFS for shared storage.
+  1. Configure NFS Server on the Head Node.
+  1. Establish central software repository (`/home/software`).
+  1. Create `nfs-client` system overlay to auto-mount storage on compute nodes.
 
 ### Phase 3: Scientific Stack & Validation
 
 * **Lead:** Cade
 * **Tasks:**
-  1. **Containerize:** Create Apptainer definitions for `mvme2xy` and `dat2xy`.
-  1. **Compile:** Optimize Talys/Geant4 for Broadwell (v4) CPUs.
-  1. **Validation:** Verify 20Gbps throughput between nodes using `iperf3`.
+  1. **Containerize:** Create Apptainer definitions for `mvme2xy`, `dat2xy`, Geant4, etc.
+  1. **Wrappers:** Create `sub_talys`, `sub_geant4` helper scripts.
+  1. **Validation:** Verify 20Gbps throughput using `iperf3` and run "Golden Ticket" simulation job.
 
 ### Phase 4: User Onboarding
 
@@ -119,6 +121,7 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 * **Tasks:**
   1. Deploy helper scripts to `/usr/local/bin`.
   1. Publish "Quickstart Guide" on internal Wiki.
+  1. Train initial user group.
 
 ---
 
@@ -127,7 +130,7 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 | Role | Responsibility | Success Metric |
 | :--- | :--- | :--- |
 | **Greg & Don** | Hardware integration, Slurm/Warewulf config, Network Bonding, Endian Firewall integration. | Nodes boot via PXE; 20Gbps bandwidth active; Seamless DHCP redirection. |
-| **Cade** | Application containerization, User workflow design. | Reduction in time spent troubleshooting peers' jobs. |
+| **Cade** | Application containerization, User workflow design, Web Portal testing. | Reduction in time spent troubleshooting peers' jobs. |
 
 ---
 
@@ -137,3 +140,4 @@ To prevent the lead graduate student from becoming permanent IT support, we will
     * *Mitigation:* Warewulf configuration must specifically delay the bonding initialization until after the image is transferred, or use Mode 4 (802.3ad) compatible boot settings.
 2. **Storage I/O:** Processing large datasets with 80 cores simultaneously may choke the NFS head node.
     * *Mitigation:* Use the Head Node's storage primarily for `/home`; use local node SSD scratch space for heavy write operations.
+    
