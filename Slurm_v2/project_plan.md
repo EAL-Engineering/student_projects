@@ -119,7 +119,6 @@ To prevent the lead graduate student from becoming permanent IT support, we will
 
 * **Lead:** Joint Effort
 * **Tasks:**
-  1. Deploy helper scripts to `/usr/local/bin`.
   1. Publish "Quickstart Guide" on internal Wiki.
   1. Train initial user group.
 
