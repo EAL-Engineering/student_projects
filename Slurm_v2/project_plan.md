@@ -140,4 +140,3 @@ To prevent the lead graduate student from becoming permanent IT support, we will
     * *Mitigation:* Warewulf configuration must specifically delay the bonding initialization until after the image is transferred, or use Mode 4 (802.3ad) compatible boot settings.
 2. **Storage I/O:** Processing large datasets with 80 cores simultaneously may choke the NFS head node.
     * *Mitigation:* Use the Head Node's storage primarily for `/home`; use local node SSD scratch space for heavy write operations.
-    
